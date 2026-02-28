@@ -140,7 +140,16 @@ export function ApiConfigTabContainer() {
       return
     }
 
-    const uuid = crypto.randomUUID()
+    let uuid: string
+    try {
+      uuid = globalThis.crypto.randomUUID()
+    } catch {
+      const b = globalThis.crypto.getRandomValues(new Uint8Array(16))
+      b[6] = (b[6] & 0x0f) | 0x40
+      b[8] = (b[8] & 0x3f) | 0x80
+      const h = Array.from(b, v => v.toString(16).padStart(2, '0'))
+      uuid = `${h.slice(0, 4).join('')}-${h.slice(4, 6).join('')}-${h.slice(6, 8).join('')}-${h.slice(8, 10).join('')}-${h.slice(10).join('')}`
+    }
     const providerId = `${newGeminiProvider.apiType}:${uuid}`
     const name = newGeminiProvider.name.trim()
     const baseUrl = newGeminiProvider.baseUrl.trim()
